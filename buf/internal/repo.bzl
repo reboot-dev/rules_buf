@@ -56,6 +56,15 @@ def _buf_dependencies_impl(ctx):
 
     ctx.file("WORKSPACE", "workspace(name = \"{name}\")".format(name = ctx.name), executable = False)
 
+    # Gazelle >= 0.32 no longer has built-in resolver rules for
+    # googleapis. Restore the rules we need for building Reboot.
+    resolve_directives = [
+        "# gazelle:resolve proto proto google/rpc/status.proto @googleapis//google/rpc:status_proto",
+        "# gazelle:resolve proto proto google/api/expr/v1alpha1/checked.proto @googleapis//google/api/expr/v1alpha1:expr_proto",
+        "# gazelle:resolve proto proto google/api/expr/v1alpha1/syntax.proto @googleapis//google/api/expr/v1alpha1:expr_proto",
+    ]
+    ctx.file("BUILD.bazel", "\n".join(resolve_directives), executable = False)
+
     # Run gazelle to generate `proto_library` rules.
     # Note that this doesn't require the `buf` extension
     # as all the files are exported to workspace root.
